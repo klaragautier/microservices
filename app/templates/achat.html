@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Statut de la Commande</title>
+  <style>
+    :root{
+      --primary:#6d28d9;      /* violet */
+      --primary-light:#a78bfa;
+      --accent:#3b82f6;       /* bleu */
+      --bg:linear-gradient(135deg,#6366f1,#8b5cf6);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:"Poppins","Segoe UI",Arial,sans-serif;
+      min-height:100vh; display:grid; place-items:center; padding:24px;
+      background:var(--bg); color:#111827;
+    }
+    .card{
+      width:min(960px,96vw);
+      background:#fff; border-radius:var(--radius);
+      box-shadow:0 10px 35px rgba(0,0,0,.15);
+      padding:28px; animation:pop .35s ease;
+    }
+    @keyframes pop{from{transform:scale(.97);opacity:0}to{transform:scale(1);opacity:1}}
+
+    .header{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+    h1{margin:0; font-size:1.8rem; color:var(--primary)}
+    .sub{margin:0; color:#6b7280}
+
+    .banner{
+      margin-top:16px; padding:12px 14px; border-radius:12px; display:flex; align-items:center; gap:10px; font-weight:600;
+    }
+    .ok{background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0}
+    .error{background:#fef2f2; color:#991b1b; border:1px solid #fecaca}
+    .pending{background:#eff6ff; color:#1e40af; border:1px solid #bfdbfe}
+
+    .section-title{margin:18px 0 8px; font-size:1.1rem; color:#374151; font-weight:700}
+
+    .table-wrap{overflow-x:auto; border:1px solid #e5e7eb; border-radius:12px}
+    table{width:100%; border-collapse:collapse; background:#fff; border-radius:12px; overflow:hidden}
+    thead th{
+      text-align:left; background:#f3f4f6; color:#374151; font-weight:700;
+      padding:14px; font-size:.95rem; border-bottom:1px solid #e5e7eb;
+    }
+    tbody td{padding:12px 14px; border-bottom:1px solid #f3f4f6; vertical-align:middle}
+    tbody tr:hover{background:#fafafa}
+    .num{font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap}
+    .total-row td{font-weight:800; border-top:2px solid #e5e7eb; background:#fbfbfb}
+
+    .actions{display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:16px; flex-wrap:wrap}
+    .link{color:var(--accent); text-decoration:none; font-weight:600}
+    .link:hover{text-decoration:underline}
+
+    .chip{
+      background:#f3f4f6; border-radius:999px; padding:8px 14px; font-weight:700; color:#111827;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="header">
+      <h1>Statut de la commande</h1>
+      <p class="sub">Client : <strong>{{ user }}</strong></p>
+    </div>
+
+    {% if status == 'ok' %}
+      <div class="banner ok">✅ Commande réussie — merci pour votre achat, {{ user }} !</div>
+    {% elif status == 'error' %}
+      <div class="banner error">❌ Paiement échoué — veuillez réessayer.</div>
+    {% else %}
+      <div class="banner pending">⏳ Commande en attente — traitement en cours…</div>
+    {% endif %}
+
+    {% if order_details %}
+      <div class="section-title">Résumé du panier</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Article</th>
+              <th>Quantité</th>
+              <th class="num">Prix unitaire</th>
+              <th class="num">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% set grand_total = 0 %}
+            {% for item in order_details %}
+              <tr>
+                <td>{{ item.article }}</td>
+                <td>{{ item.quantity }}</td>
+                <td class="num">{{ "%.2f"|format(item.unit_price) }} €</td>
+                <td class="num">{{ "%.2f"|format(item.total_price) }} €</td>
+                {% set grand_total = grand_total + item.total_price %}
+              </tr>
+            {% endfor %}
+            <tr class="total-row">
+              <td colspan="3" class="num">Total de la commande :</td>
+              <td class="num">{{ "%.2f"|format(grand_total) }} €</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="actions">
+        <a class="link" href="{{ url_for('accueil', user=user) }}">← Retour à la liste des articles</a>
+        <span class="chip">Montant payé : {{ "%.2f"|format(grand_total) }} €</span>
+      </div>
+    {% else %}
+      <p class="sub" style="margin-top:16px">Aucun article dans le panier.</p>
+      <div class="actions">
+        <a class="link" href="{{ url_for('accueil', user=user) }}">← Retour à la liste des articles</a>
+      </div>
+    {% endif %}
+  </main>
+</body>
+</html>

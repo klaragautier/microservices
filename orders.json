@@ -1,0 +1,57 @@
+{
+    "klaragautier": [
+        {
+            "order_id": "1762378659517974",
+            "date": "2025-11-05 22:37:39",
+            "total": 17.0,
+            "items": [
+                {
+                    "article": "Fraises",
+                    "quantity": 2,
+                    "unit_price": 2.5,
+                    "total_price": 5.0
+                },
+                {
+                    "article": "Peches",
+                    "quantity": 4,
+                    "unit_price": 3.0,
+                    "total_price": 12.0
+                }
+            ]
+        },
+        {
+            "order_id": "1762379199790945",
+            "date": "2025-11-05 22:46:39",
+            "total": 8.6,
+            "items": [
+                {
+                    "article": "Fraises",
+                    "quantity": 2,
+                    "unit_price": 2.5,
+                    "total_price": 5.0
+                },
+                {
+                    "article": "Haricots",
+                    "quantity": 2,
+                    "unit_price": 1.8,
+                    "total_price": 3.6
+                }
+            ]
+        }
+    ],
+    "klarag": [
+        {
+            "order_id": "1763041481336798",
+            "date": "2025-11-13 14:44:41",
+            "total": 15.0,
+            "items": [
+                {
+                    "article": "Fraises",
+                    "quantity": 6,
+                    "unit_price": 2.5,
+                    "total_price": 15.0
+                }
+            ]
+        }
+    ]
+}
