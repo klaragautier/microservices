@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Accueil</title>
+  <style>
+    :root {
+      --primary: #6d28d9;      /* violet */
+      --primary-light: #a78bfa;
+      --accent: #3b82f6;       /* bleu */
+      --bg: linear-gradient(135deg, #6366f1, #8b5cf6);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: var(--bg);
+      color: #1f2937;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(900px, 95vw);
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 35px rgba(0,0,0,.15);
+      padding: 28px;
+      animation: pop .35s ease;
+    }
+    @keyframes pop { from { transform: scale(.97); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .header {
+      display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    h1 {
+      margin: 0; font-size: 1.8rem; color: var(--primary);
+    }
+    .sub { color: #6b7280; margin: 0 0 8px; }
+
+    .alert {
+      background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+      padding: 12px; border-radius: 10px; margin: 12px 0;
+    }
+
+    .table-wrap { overflow-x: auto; margin-top: 14px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    thead th {
+      text-align: left;
+      background: #f3f4f6;
+      color: #374151;
+      font-weight: 700;
+      padding: 14px;
+      font-size: .95rem;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    tbody td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+    tbody tr:hover { background: #fafafa; }
+
+    .price {
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: #111827;
+    }
+
+    input[type="number"] {
+      width: 80px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      outline: none;
+      transition: .2s;
+      text-align: center;
+    }
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(59,130,246,.2);
+    }
+
+    .totals {
+      display: flex; justify-content: flex-end; gap: 24px; align-items: center;
+      margin-top: 16px; flex-wrap: wrap;
+    }
+    .total-chip {
+      background: #f3f4f6;
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .actions {
+      margin-top: 18px;
+      display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;
+    }
+    button {
+      border: none; padding: 12px 18px; border-radius: 12px; cursor: pointer;
+      font-weight: 700; font-size: 1rem; transition: .25s;
+    }
+    .primary {
+      background: var(--primary); color: #fff;
+    }
+    .primary:hover { background: var(--primary-light); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(109,40,217,.3); }
+
+    .link {
+      color: var(--accent); text-decoration: none; font-weight: 600;
+    }
+    .link:hover { text-decoration: underline; }
+    .footer {
+      margin-top: 10px; text-align: center; color: #6b7280; font-size: .9rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="header">
+      <h1>Bonjour {{ user }} 👋</h1>
+      <p class="sub">Choisis tes articles et valide ton panier!</p>
+    </div>
+
+    {% if error_message %}
+      <div class="alert">{{ error_message }}</div>
+    {% endif %}
+
+    <!-- Formulaire POST (conservé) -->
+    <form method="POST" action="/submit_order/{{ user }}" id="panierForm">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Article</th>
+              <th>Prix unitaire</th>
+              <th>Quantité</th>
+              <th style="text-align:right;">Sous-total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for nom, prix in articles.items() %}
+            <tr data-price="{{ prix }}">
+              <td>{{ nom }}</td>
+              <td class="price">{{ prix }} €</td>
+              <td>
+              <input type="number" name="{{ nom }}" min="0"
+                  value="{{ request.form.get(nom, '0') }}" />
+              </td>
+              <td class="price" style="text-align:right;"><span class="row-total">0,00 €</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="totals">
+        <div class="total-chip">Total : <span id="grandTotal">0,00 €</span></div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="primary">Acheter le panier</button>
+      </div>
+    </form>
+
+    <p class="footer">
+      <a class="link" href="{{ url_for('login') }}">Déconnexion / changer d'utilisateur</a>
+    </p>
+  </main>
+
+  <script>
+    // Format euros FR
+    const eur = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' });
+
+    function recalc() {
+      let total = 0;
+      document.querySelectorAll('tbody tr').forEach(tr => {
+        const price = parseFloat(tr.dataset.price || '0');
+        const input = tr.querySelector('input[type="number"]');
+        const qty = Math.max(0, parseInt(input.value || '0', 10));
+        const sub = price * qty;
+        tr.querySelector('.row-total').textContent = eur.format(sub);
+        total += sub;
+      });
+      document.getElementById('grandTotal').textContent = eur.format(total);
+    }
+
+    // recalcul initial + à chaque changement
+    document.querySelectorAll('tbody input[type="number"]').forEach(inp => {
+      inp.addEventListener('input', recalc);
+    });
+    recalc();
+  </script>
+</body>
+</html>
