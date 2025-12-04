@@ -9,16 +9,28 @@ terraform {
 
 provider "docker" {}
 
-variable "service_name" {
+variable "service_name1" {
   type        = string
   description = "Nom du microservice"
-  default     = "catalog"
+  default     = "catalogue"
 }
 
-variable "external_port" {
+variable "service_name2" {
+  type        = string
+  description = "Nom du microservice"
+  default     = "cart"
+}
+
+variable "external_port1" {
   type        = number
   description = "Port exposé sur la machine hôte"
   default     = 8081
+}
+
+variable "external_port2" {
+  type        = number
+  description = "Port exposé sur la machine hôte"
+  default     = 8082
 }
 
 resource "docker_network" "ecommerce" {
@@ -31,7 +43,28 @@ resource "docker_image" "service" {
 }
 
 resource "docker_container" "service" {
-  name  = "${var.service_name}-service"
+  name  = "${var.service_name1}-service"
+  image = docker_image.service.image_id
+
+  networks_advanced {
+    name = docker_network.ecommerce.name
+  }
+
+
+  ports {
+    internal = 80
+    external = var.external_port1
+  }
+
+  env = [
+    "SERVICE_NAME=${var.service_name1}",
+    "ENVIRONMENT=dev"
+  ]
+}
+
+
+resource "docker_container" "cart" {
+  name  = "${var.service_name2}-service"
   image = docker_image.service.image_id
 
   networks_advanced {
@@ -40,15 +73,19 @@ resource "docker_container" "service" {
 
   ports {
     internal = 80
-    external = var.external_port
+    external = var.external_port2
   }
 
   env = [
-    "SERVICE_NAME=${var.service_name}",
+    "SERVICE_NAME=${var.service_name2}",
     "ENVIRONMENT=dev"
   ]
 }
 
-output "service_url" {
-  value = "http://localhost:${var.external_port}"
+output "service_url1" {
+  value = "http://localhost:${var.external_port1}"
+}
+
+output "service_url2" {
+  value = "http://localhost:${var.external_port2}"
 }

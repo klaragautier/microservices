@@ -1,0 +1,66 @@
+• Question 1 : Identifier les variables définies (service_name, external_port) et expliquer comment elles sont utilisées dans la ressource docker_container.service.
+
+On a deux variables : service_name et external_port.
+
+service_name : elle permet d’adapter le nom du microservice sans modifier le code Terraform, simplement en changeant la variable.
+Son type est string, c’est-à-dire qu’il attend une chaîne de caractères, le nom du microservice, qui s’appelle ici par défaut « catalog ».
+
+variable "service_name" {
+  type        = string
+  description = "Nom du microservice"
+  default     = "catalog"
+}
+
+
+external_port : elle permet de choisir facilement sur quel port local le service sera accessible.
+Son type est number et par défaut le numéro du port est 8081.
+
+variable "external_port" {
+  type        = number
+  description = "Port exposé sur la machine hôte"
+  default     = 8081
+}
+
+• Question 2 : Expliquer le rôle de la ressource docker_network.ecommerce et pourquoi elle est définie séparément du conteneur.
+
+Le rôle de la ressource docker_network.ecommerce est de créer un réseau Docker avant d’exécuter les conteneurs.
+Cela permet aux conteneurs du projet de communiquer entre eux. Ici mon réseau s’appelle « ecommerce-net », c’est le même nom donné au réseau créé par docker-compose mais celui-ci sera créé à partir de Terraform en faisant terraform apply.
+Les deux peuvent avoir le même nom mais ne sont pas gérés par le même outil.
+
+Elle est définie séparément car plusieurs conteneurs vont utiliser le même réseau et cela évite de recréer un réseau pour chaque conteneur. Terraform crée en premier le réseau puis les conteneurs qui l’utilisent. Cela nous permet aussi de modifier les conteneurs sans casser le réseau.
+
+resource "docker_network" "ecommerce" {
+  name = "ecommerce-net"
+}
+
+• Question 3 : En quoi l’utilisation de Terraform pour gérer vos conteneurs change-t-elle votre façon de déployer le projet fil rouge par rapport à docker-compose ou à des scripts Bash ?
+
+Terraform : On décrit l’infrastructure dans main.tf au lieu de lancer manuellement les commandes. Ici on décrit l’état final souhaité et Terraform s’occupe de tout : créer, modifier ou supprimer ce qu’il faut et mettre à jour automatiquement. Cela rend le déploiement automatique et organisé. C’est une approche déclarative : on dit ce que l’on veut obtenir sans expliquer comment le faire.
+
+Docker Compose : On écrit un fichier docker-compose.yml qui décrit les services Docker à lancer ensemble. C’est aussi une approche déclarative : on dit ce que l’on veut obtenir sans expliquer comment le faire, Docker Compose démarre tout d’un coup.
+
+Bash + Docker CLI : On écrit un script Bash qui contient des commandes Docker qui doivent être exécutées dans un ordre donné. C’est une approche impérative : on dit exactement quelles étapes exécuter et dans quel ordre pour obtenir un résultat.
+
+L’utilisation de Terraform change ma façon de déployer le projet fil rouge car, au lieu d’exécuter manuellement des commandes Docker en Bash ou d’utiliser un fichier docker-compose pour lancer les services, je décris directement l’état final de mon infrastructure dans des fichiers .tf. Terraform se charge ensuite de créer, modifier ou supprimer les ressources nécessaires en fonction de cette description.
+
+• Question 4 : Comment pourriez-vous généraliser ce TP pour déployer automatiquement plusieurs microservices de votre projet e-commerce (catalogue, panier, commande…) avec un seul terraform apply ?
+
+Pour généraliser ce TP à plusieurs microservices, il faut ajouter une ressource Docker par microservice qui utilise le même réseau ecommerce-net. On peut dupliquer les ressources docker_container et docker_image pour chaque service : un bloc pour api_gateway, un bloc pour auth_service, etc.
+On peut aussi utiliser une liste de microservices avec un for_each pour que Terraform crée automatiquement tous les conteneurs.
+Comme ça, un seul terraform apply lance l’ensemble des microservices de l’application.
+
+resource "docker_container" "api_gateway" {
+  ...
+}
+
+resource "docker_container" "auth_service" {
+  ...
+}
+
+resource "docker_container" "user_service" {
+  ...
+}
+
+resource "docker_container" "orders_service" {
+  ...
+}
