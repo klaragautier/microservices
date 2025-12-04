@@ -1,6 +1,5 @@
-from auth import auth_app
+# Ce fichier ne sert qu'au lancement du serveur web
+# Il est possible de passer du mode debug au mode prod sans altérer le code de l'application
 
-if __name__ == "__main__":
-    auth_app.run(port=5002, debug=True)
-
-
+from app import app
+app.run(host="0.0.0.0", port=5001, debug=True)

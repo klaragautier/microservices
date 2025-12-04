@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  api_gateway:
+    build: ../api_gateway
+    container_name: api-gateway
+    ports:
+      - "5000:5000"   # Port extérieur : intérieur
+    environment:
+      - AUTH_URL=http://auth_service:5001
+      - USER_URL=http://user_service:5002
+      - ORDERS_URL=http://orders_service:5003
+    networks:
+      - ecommerce-net
+
+  auth_service:
+    build: ../auth_service
+    container_name: auth-service
+    ports:
+      - "5001:5001"
+    networks:
+      - ecommerce-net
+
+  user_service:
+    build: ../user_service
+    container_name: user-service
+    ports:
+      - "5002:5002"
+    volumes:
+      - ../user_service/app/user.db:/app/user.db
+    networks:
+      - ecommerce-net
+
+  orders_service:
+    build: ../orders_service
+    container_name: orders-service
+    ports:
+      - "5003:5003"
+    volumes:
+      - ../orders_service/app/orders_data:/app/orders_data
+    networks:
+      - ecommerce-net
+
+networks:
+  ecommerce-net:
